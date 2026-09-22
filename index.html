@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+   <meta charset="UTF-8" />
+   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+   <title>Shelf Talker</title>
+   <style>
+     :root {
+       --paper: #f7f2e7;
+       --card-bg: #f7f0e2;
+       --ink: #222;
+       --muted: #5d5149;
+       --accent: #d97706;
+       --line: #d8cdb8;
+       --danger: #a43535;
+     }
+
+
+     * {
+       box-sizing: border-box;
+     }
+
+
+     body {
+       margin: 0;
+       font-family: Arial, Helvetica, sans-serif;
+       background: #efeae2;
+       color: var(--ink);
+     }
+
+
+     .controls {
+       max-width: 1200px;
+       margin: 0 auto;
+       padding: 24px 20px 18px;
+     }
+
+
+     .input-grid {
+       display: grid;
+       grid-template-columns: repeat(4, minmax(170px, 1fr));
+       gap: 14px;
+       align-items: end;
+     }
+
+
+     .field {
+       display: flex;
+       flex-direction: column;
+       gap: 6px;
+     }
+
+
+     .field label {
+       font-size: 0.72rem;
+       letter-spacing: 0.08em;
+       text-transform: uppercase;
+       color: var(--muted);
+       font-weight: 700;
+     }
+
+
+     .field input,
+     .field textarea {
+       width: 100%;
+       border: 1px solid var(--line);
+       border-radius: 6px;
+       padding: 10px 12px;
+       font: inherit;
+       background: rgba(255, 255, 255, 0.25);
+       color: var(--ink);
+     }
+
+
+     .field textarea {
+       min-height: 56px;
+       resize: vertical;
+     }
+
+
+     .field input:focus,
+     .field textarea:focus {
+       outline: 2px solid rgba(34, 34, 34, 0.15);
+       border-color: #b9ad99;
+     }
+
+
+     .field input.invalid,
+     .field textarea.invalid {
+       border-color: var(--danger);
+       box-shadow: 0 0 0 1px rgba(164, 53, 53, 0.15);
+     }
+
+
+     .top-actions {
+       display: flex;
+       justify-content: flex-end;
+       align-items: center;
+       margin-top: 18px;
+       gap: 12px;
+       flex-wrap: wrap;
+     }
+
+
+     button {
+       border: none;
+       border-radius: 999px;
+       padding: 10px 18px;
+       font: inherit;
+       font-weight: 700;
+       letter-spacing: 0.04em;
+       cursor: pointer;
+       transition: transform 0.15s ease, opacity 0.15s ease;
+     }
+
+
+     button:hover {
+       transform: translateY(-1px);
+     }
+
+
+     button:active {
+       transform: translateY(0);
+     }
+
+
+     .add-btn {
+       background: var(--ink);
+       color: #fff;
+     }
+
+
+     .print-btn {
+       background: #d8c5a1;
+       color: var(--ink);
+     }
+
+
+     .export-btn {
+       background: #a3c4bc;
+       color: var(--ink);
+     }
+
+
+     .cards-wrap {
+       max-width: 1200px;
+       margin: 0 auto;
+       padding: 10px 20px 40px;
+       display: flex;
+       flex-wrap: wrap;
+       gap: 22px;
+     }
+
+
+     .shelf-card {
+       width: 10cm;
+       height: 5cm;
+       background: var(--card-bg);
+       border: 2px solid var(--accent);
+       border-radius: 14px;
+       position: relative;
+       padding: 18px 18px 14px;
+       box-shadow: 0 1px 0 rgba(0,0,0,0.08);
+       display: flex;
+       flex-direction: column;
+       justify-content: space-between;
+     }
+
+
+     .shelf-card .meta {
+       font-size: 0.54rem;
+       letter-spacing: 0.18em;
+       text-transform: uppercase;
+       color: var(--muted);
+       font-weight: 700;
+     }
+
+
+     .shelf-card .title {
+       margin: 0;
+       font-family: Georgia, "Times New Roman", serif;
+       font-size: 0.9rem;
+       line-height: 1.2;
+       font-weight: 700;
+       letter-spacing: 0.01em;
+       color: var(--ink);
+     }
+
+
+     .shelf-card .author {
+       margin: 6px 0 0;
+       font-size: 0.52rem;
+       letter-spacing: 0.08em;
+       text-transform: uppercase;
+       color: var(--muted);
+     }
+
+
+     .shelf-card .reason {
+       margin: 8px 0 0;
+       font-size: 0.4rem;
+       line-height: 1.5;
+       letter-spacing: 0.04em;
+       color: var(--ink);
+     }
+
+
+     .shelf-card .picker {
+       position: absolute;
+       right: 14px;
+       bottom: 12px;
+       font-size: 0.42rem;
+       letter-spacing: 0.08em;
+       text-transform: uppercase;
+       color: var(--ink);
+       text-align: right;
+     }
+
+
+     .shelf-card .delete-btn {
+       position: absolute;
+       top: 8px;
+       right: 8px;
+       background: transparent;
+       border: none;
+       color: var(--danger);
+       font-size: 1.2rem;
+       cursor: pointer;
+       padding: 4px;
+       line-height: 1;
+       opacity: 0.5;
+       border-radius: 4px;
+     }
+
+
+     .shelf-card .delete-btn:hover {
+       opacity: 1;
+       transform: none;
+     }
+
+
+     @media print {
+       body {
+         background: #fff;
+       }
+
+
+       .controls {
+         display: none !important;
+       }
+
+
+       .cards-wrap {
+         max-width: none;
+         margin: 0;
+         padding: 0;
+         display: flex;
+         flex-wrap: wrap;
+         gap: 0.4cm;
+         page-break-inside: avoid;
+       }
+
+
+       .shelf-card {
+       box-shadow: none;
+       margin: 0;
+     }
+
+
+     .shelf-card .delete-btn {
+       display: none;
+     }
+   }
+
+
+     @page {
+       margin: 0.5cm;
+     }
+   </style>
+ </head>
+ <body>
+   <div class="controls">
+     <div class="input-grid">
+       <div class="field">
+         <label for="title">Book title</label>
+         <input id="title" type="text" placeholder="Enter title" />
+       </div>
+
+
+       <div class="field">
+         <label for="author">Author</label>
+         <input id="author" type="text" placeholder="Enter author" />
+       </div>
+
+
+       <div class="field">
+         <label for="why">Why we like it</label>
+         <textarea id="why" placeholder="One line on why we like it"></textarea>
+       </div>
+
+
+       <div class="field">
+         <label for="picker">Whose pick it is</label>
+         <input id="picker" type="text" placeholder="Picker's name" />
+       </div>
+     </div>
+
+
+     <div class="top-actions">
+       <button class="add-btn" type="button" id="addCard">Add card</button>
+       <button class="print-btn" type="button" id="printCards">Print these</button>
+       <button class="export-btn" type="button" id="exportCards">Export to Excel</button>
+     </div>
+   </div>
+
+
+   <div id="cards" class="cards-wrap" aria-live="polite"></div>
+
+
+   <script>
+     const titleInput = document.getElementById('title');
+     const authorInput = document.getElementById('author');
+     const whyInput = document.getElementById('why');
+     const pickerInput = document.getElementById('picker');
+     const cardsContainer = document.getElementById('cards');
+     const addCardBtn = document.getElementById('addCard');
+     const printCardsBtn = document.getElementById('printCards');
+     const exportCardsBtn = document.getElementById('exportCards');
+
+
+     let cardsData = JSON.parse(localStorage.getItem('shelfCards')) || [];
+
+
+     function saveCards() {
+       localStorage.setItem('shelfCards', JSON.stringify(cardsData));
+     }
+
+
+     function renderCards() {
+       cardsContainer.innerHTML = '';
+       cardsData.forEach(data => {
+         cardsContainer.appendChild(createCard(data.id, data.title, data.author, data.why, data.picker));
+       });
+     }
+
+
+     function deleteCard(id) {
+       cardsData = cardsData.filter(card => card.id !== id);
+       saveCards();
+       renderCards();
+     }
+
+
+     function markInvalid() {
+       titleInput.classList.add('invalid');
+       titleInput.setAttribute('aria-invalid', 'true');
+     }
+
+
+     function clearInvalid() {
+       titleInput.classList.remove('invalid');
+       titleInput.removeAttribute('aria-invalid');
+     }
+
+
+     function createCard(id, title, author, why, picker) {
+       const card = document.createElement('article');
+       card.className = 'shelf-card';
+
+
+       const badge = document.createElement('div');
+       badge.className = 'meta';
+       badge.textContent = 'Staff Pick';
+
+
+       const titleEl = document.createElement('h2');
+       titleEl.className = 'title';
+       titleEl.textContent = title;
+
+
+       const authorEl = document.createElement('div');
+       authorEl.className = 'author';
+       authorEl.textContent = author || 'Author unknown';
+
+
+       const reasonEl = document.createElement('div');
+       reasonEl.className = 'reason';
+       reasonEl.textContent = why || 'A favorite for thoughtful readers.';
+
+
+       const pickerEl = document.createElement('div');
+       pickerEl.className = 'picker';
+       pickerEl.textContent = picker || 'Staff';
+
+
+       const deleteBtn = document.createElement('button');
+       deleteBtn.className = 'delete-btn';
+       deleteBtn.innerHTML = '&times;';
+       deleteBtn.onclick = () => deleteCard(id);
+       deleteBtn.setAttribute('aria-label', 'Delete card');
+       deleteBtn.title = 'Delete card';
+
+
+       card.appendChild(badge);
+       card.appendChild(titleEl);
+       card.appendChild(authorEl);
+       card.appendChild(reasonEl);
+       card.appendChild(pickerEl);
+       card.appendChild(deleteBtn);
+
+
+       return card;
+     }
+
+
+     function addCard() {
+       const title = titleInput.value.trim();
+
+
+       if (!title) {
+         markInvalid();
+         titleInput.focus();
+         return;
+       }
+
+
+       clearInvalid();
+
+
+       const author = authorInput.value.trim();
+       const why = whyInput.value.trim();
+       const picker = pickerInput.value.trim();
+
+
+       const id = Date.now().toString() + Math.random().toString(36).substr(2, 5);
+       const newCard = { id, title, author, why, picker };
+       cardsData.push(newCard);
+      
+       saveCards();
+       renderCards();
+
+
+       titleInput.value = '';
+       authorInput.value = '';
+       whyInput.value = '';
+       pickerInput.value = '';
+       titleInput.focus();
+     }
+
+
+     addCardBtn.addEventListener('click', addCard);
+     printCardsBtn.addEventListener('click', function () {
+       window.print();
+     });
+
+
+     exportCardsBtn.addEventListener('click', function () {
+       if (cardsData.length === 0) {
+         alert('No cards to export.');
+         return;
+       }
+
+
+       let csvContent = 'Title,Author,Why we like it,Picker\n';
+
+
+       const escapeCSV = (str) => {
+         if (!str) return '""';
+         return '"' + str.replace(/"/g, '""') + '"';
+       };
+
+
+       cardsData.forEach(card => {
+         const row = [
+           escapeCSV(card.title),
+           escapeCSV(card.author),
+           escapeCSV(card.why),
+           escapeCSV(card.picker)
+         ].join(',');
+         csvContent += row + '\n';
+       });
+
+
+       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+       const url = URL.createObjectURL(blob);
+      
+       const link = document.createElement('a');
+       link.setAttribute('href', url);
+       link.setAttribute('download', 'shelf_talkers.csv');
+       link.style.visibility = 'hidden';
+       document.body.appendChild(link);
+       link.click();
+       document.body.removeChild(link);
+       URL.revokeObjectURL(url);
+     });
+
+
+     titleInput.addEventListener('input', function () {
+       if (titleInput.value.trim()) {
+         clearInvalid();
+       }
+     });
+
+
+     // Initial render
+     renderCards();
+   </script>
+ </body>
+</html>
